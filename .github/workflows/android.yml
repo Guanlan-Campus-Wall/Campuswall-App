@@ -100,15 +100,22 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           mkdir -p release
-          cp app/build/outputs/apk/release/app-release.apk "release/观澜校园墙-$RELEASE_TAG.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "release/观澜校园墙-$RELEASE_TAG.aab"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "release/观澜校园墙-$RELEASE_TAG.apk" > release/签名验证.txt
+          cp app/build/outputs/apk/release/app-release.apk "release/Campuswall-$RELEASE_TAG.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "release/Campuswall-$RELEASE_TAG.aab"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "release/Campuswall-$RELEASE_TAG.apk" > release/signature.txt
           (cd release && sha256sum *.apk *.aab > SHA256SUMS.txt)
       - name: 发布 GitHub 中文版本
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" release/* --verify-tag --title "观澜校园墙 $RELEASE_TAG · 安卓原生预览版" --notes-file "docs/releases/$RELEASE_TAG.md" --prerelease
+        run: |
+          gh release create "$RELEASE_TAG" \
+            "release/Campuswall-$RELEASE_TAG.apk#观澜校园墙 $RELEASE_TAG 安卓安装包" \
+            "release/Campuswall-$RELEASE_TAG.aab#观澜校园墙 $RELEASE_TAG 应用分发包" \
+            "release/SHA256SUMS.txt#安装包校验和" \
+            "release/signature.txt#签名验证报告" \
+            --verify-tag --title "观澜校园墙 $RELEASE_TAG · 安卓原生预览版" \
+            --notes-file "docs/releases/$RELEASE_TAG.md" --prerelease
       - name: 清理临时签名密钥
         if: always()
         run: rm -f "$RUNNER_TEMP/campuswall-release.p12"

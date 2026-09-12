@@ -265,7 +265,7 @@ fun ComposeScreen(model: WallModel, initialTag: String = "", back: () -> Unit) {
                     label = { Text("每行一个选项") },
                     minLines = 2,
                 )
-                DateTimeField("投票截止时间",deadline){deadline=it}
+                DateTimeField("投票截止时间", deadline) { deadline = it }
             }
             Button(
                 onClick = {
@@ -417,7 +417,8 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
                         },
                     )
                 }
-                if (model.user == null) TextButton(onClick = { go("login") }) { Text("登录后评论") }
+                if (model.user == null && !model.community.optBoolean("guest_commenting_enabled"))
+                    TextButton(onClick = { go("login") }) { Text("登录后评论") }
                 else
                     Column(Modifier.padding(16.dp)) {
                         refer?.let {

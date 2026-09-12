@@ -406,7 +406,11 @@ fun AdminScreen(model: WallModel, back: () -> Unit) {
                                     ),
                                 )
                             Text(title, style = MaterialTheme.typography.titleMedium)
-                            Text(row.s("status", row.s("moderation_status", row.s("timestamp"))))
+                            Text(
+                                displayState(
+                                    row.s("status", row.s("moderation_status", row.s("timestamp")))
+                                )
+                            )
                             if (s.endpoint == "/api/messages") {
                                 Text(row.s("review_status"))
                                 Row(Modifier.horizontalScroll(rememberScrollState())) {
@@ -551,7 +555,7 @@ fun AdminScreen(model: WallModel, back: () -> Unit) {
                                     { form = it },
                                     { permissionUser = row.s("id") },
                                 )
-                                Text(row.s("role"))
+                                Text(displayState(row.s("role")))
                                 Row(Modifier.horizontalScroll(rememberScrollState())) {
                                     listOf(
                                             "registration/approve" to "通过注册",
@@ -635,7 +639,7 @@ fun AdminScreen(model: WallModel, back: () -> Unit) {
                                     Text("处理工单")
                                 }
                             } else if (s.endpoint == "/report") {
-                                Text(row.s("category"))
+                                Text(displayState(row.s("category")))
                                 TextButton(
                                     onClick = {
                                         form =
@@ -770,6 +774,45 @@ private val labels =
         "users" to "用户",
         "messages" to "动态",
         "comments" to "评论",
+        "id" to "编号",
+        "message_id" to "动态编号",
+        "user_id" to "用户编号",
+        "action" to "操作",
+        "reason" to "原因",
+        "role" to "身份",
+        "nickname" to "昵称",
+        "username" to "账号",
+        "student_id" to "学号",
+        "email" to "邮箱",
+        "moderation_status" to "审核状态",
+        "updated_at" to "更新时间",
+        "timestamp" to "时间",
+        "community" to "社区",
+        "reports" to "举报",
+        "feedback" to "反馈",
+        "managers" to "管理人员",
+        "audit" to "审计",
+        "pending" to "待处理",
+        "approved" to "已通过",
+        "hidden" to "已隐藏",
+        "visible" to "已公开",
+        "deleted" to "已删除",
+        "rejected" to "已退回",
+        "pending_posts" to "待审动态",
+        "pending_confessions" to "待审表白",
+        "affected_messages" to "涉及动态",
+        "comment_reports" to "评论举报",
+        "processed_total" to "已处理总数",
+        "processed_last_7_days" to "近七天已处理",
+        "in_progress" to "处理中",
+        "resolved" to "已解决",
+        "closed" to "已关闭",
+        "active" to "正常",
+        "disabled" to "已停用",
+        "count" to "数量",
+        "category" to "分类",
+        "public_reply" to "公开回复",
+        "internal_note" to "内部备注",
     )
 
 @Composable
@@ -777,9 +820,12 @@ private fun ReadableObject(value: JSONObject) {
     value.keys().forEach { k ->
         if (k != "success" && !k.contains("secret") && !k.contains("token")) {
             val v = value.opt(k)
-            if (v !is JSONObject && v !is org.json.JSONArray)
+            if (v is JSONObject) {
+                Text(labels[k] ?: "其他信息", style = MaterialTheme.typography.titleSmall)
+                Column(Modifier.padding(start = 12.dp)) { ReadableObject(v) }
+            } else if (v !is org.json.JSONArray)
                 Text(
-                    "${labels[k]?:k}：${if(v==JSONObject.NULL)"—" else v}",
+                    "${labels[k]?:"信息"}：${if(v==JSONObject.NULL)"—" else displayState(v.toString())}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
         }

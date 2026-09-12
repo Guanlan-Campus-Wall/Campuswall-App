@@ -15,27 +15,55 @@ import org.json.JSONObject
 fun TopicsScreen(model: WallModel, go: (String) -> Unit) {
     var topics by remember { mutableStateOf(emptyList<JSONObject>()) }
     var q by rememberSaveable { mutableStateOf("") }
+    var page by rememberSaveable { mutableIntStateOf(1) }
+    var total by remember { mutableIntStateOf(0) }
+    var sort by rememberSaveable { mutableStateOf("popular") }
+    var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(q, model.revision) {
+    LaunchedEffect(q, page, sort, model.revision) {
+        loading = true
         try {
-            topics =
-                model.api
-                    .request("/api/topics?q=${q.pathSegment()}&start=0&end=200")
-                    .objects("data")
+            val response =
+                model.api.request(
+                    "/api/topics?q=${q.pathSegment()}&s=$sort&start=${(page-1)*20}&end=${page*20}"
+                )
+            topics = response.objects("data")
+            total = response.optInt("total", topics.size)
             error = null
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
             error = e.message
+        } finally {
+            loading = false
         }
     }
     Column {
         PageTitle("发现话题")
         OutlinedTextField(
             q,
-            { q = it },
+            {
+                q = it
+                page = 1
+            },
             Modifier.fillMaxWidth().padding(16.dp),
             label = { Text("搜索话题") },
         )
+        Row(
+            Modifier.padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf("popular" to "热门", "newest" to "最新", "name" to "名称").forEach { (value, title) ->
+                FilterChip(
+                    sort == value,
+                    {
+                        sort = value
+                        page = 1
+                    },
+                    label = { Text(title) },
+                )
+            }
+        }
+        if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
         error?.let { Status(it) }
         LazyColumn {
             items(topics) { t ->
@@ -48,6 +76,7 @@ fun TopicsScreen(model: WallModel, go: (String) -> Unit) {
                         Modifier.clickable { go("tag/${t.s("name",t.s("tag")).pathSegment()}") },
                 )
             }
+            item { Pager(page, total, { page = it }) }
         }
     }
 }
@@ -294,7 +323,7 @@ fun MyCommentsScreen(model: WallModel, go: (String) -> Unit, back: () -> Unit) {
             items(rows) { c ->
                 ListItem(
                     headlineContent = { Text(c.s("text")) },
-                    supportingContent = { Text(c.s("moderation_status")) },
+                    supportingContent = { Text(displayState(c.s("moderation_status"))) },
                     modifier = Modifier.clickable { go("message/${c.s("message_id")}") },
                     trailingContent = {
                         TextButton(

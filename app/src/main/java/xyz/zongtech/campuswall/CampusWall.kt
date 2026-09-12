@@ -199,6 +199,7 @@ fun FeedScreen(
     var applied by rememberSaveable { mutableStateOf("") }
     var sort by rememberSaveable { mutableStateOf("newest") }
     var contentFilter by rememberSaveable { mutableStateOf("all") }
+    var showFilters by rememberSaveable { mutableStateOf(false) }
     var total by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -230,6 +231,10 @@ fun FeedScreen(
     }
     Column {
         PageTitle(title, back) {
+            if (path == "/api/get_messages")
+                IconButton(onClick = { showFilters = !showFilters }) {
+                    Icon(Icons.Default.FilterList, "筛选附件或投票")
+                }
             if (tag.isNotEmpty())
                 IconButton(
                     onClick = {
@@ -253,14 +258,53 @@ fun FeedScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (tag == "表白墙" || tag == "表白") item { ParticleHeart() }
-            if(path=="/api/user/lost-found")item{Row(Modifier.padding(horizontal=16.dp).horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)){listOf("all" to "全部","lost" to "寻物","found" to "招领","resolved" to "已找回").forEach{(v,t)->FilterChip(contentFilter==v,{contentFilter=v;page=1},label={Text(t)})}}}
+            if (path == "/api/user/lost-found")
+                item {
+                    Row(
+                        Modifier.padding(horizontal = 16.dp)
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        listOf("all" to "全部", "lost" to "寻物", "found" to "招领", "resolved" to "已找回")
+                            .forEach { (v, t) ->
+                                FilterChip(
+                                    contentFilter == v,
+                                    {
+                                        contentFilter = v
+                                        page = 1
+                                    },
+                                    label = { Text(t) },
+                                )
+                            }
+                    }
+                }
             if (path == "/api/get_messages")
                 item {
                     Column(
                         Modifier.padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){FilterChip(contentFilter=="files",{contentFilter=if(contentFilter=="files")"all"else"files";page=1},label={Text("附件")});FilterChip(contentFilter=="polls",{contentFilter=if(contentFilter=="polls")"all"else"polls";page=1},label={Text("投票")})}
+                        if (showFilters || contentFilter != "all")
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                FilterChip(
+                                    contentFilter == "files",
+                                    {
+                                        contentFilter =
+                                            if (contentFilter == "files") "all" else "files"
+                                        page = 1
+                                    },
+                                    label = { Text("附件") },
+                                )
+                                FilterChip(
+                                    contentFilter == "polls",
+                                    {
+                                        contentFilter =
+                                            if (contentFilter == "polls") "all" else "polls"
+                                        page = 1
+                                    },
+                                    label = { Text("投票") },
+                                )
+                            }
                         if (tag.isEmpty()) {
                             Text(
                                 "观澜中学 · 同学们的日常",

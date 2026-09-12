@@ -40,7 +40,10 @@ fun AdminFormDialog(model: WallModel, form: AdminForm, close: () -> Unit) {
             ) {
                 Text(form.title, style = MaterialTheme.typography.titleLarge)
                 form.fields.forEach { field ->
-                    if(field.key in listOf("muted_until","publish_at")) DateTimeField(field.label,values[field.key].orEmpty()){values=values+(field.key to it)}
+                    if (field.key in listOf("muted_until", "publish_at"))
+                        DateTimeField(field.label, values[field.key].orEmpty()) {
+                            values = values + (field.key to it)
+                        }
                     else if (field.choices.isNotEmpty()) {
                         Text(field.label, style = MaterialTheme.typography.labelLarge)
                         Column {

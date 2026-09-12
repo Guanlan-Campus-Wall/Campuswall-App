@@ -465,7 +465,7 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
             } ?: run { if (error == null) Status("正在加载…") }
         }
     }
-    if (deleting)
+    if (deleting) {
         AlertDialog(
             onDismissRequest = { deleting = false },
             title = { Text("删除这条动态？") },
@@ -484,7 +484,8 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
             },
             dismissButton = { TextButton(onClick = { deleting = false }) { Text("取消") } },
         )
-    if (editing)
+    }
+    if (editing) {
         AlertDialog(
             onDismissRequest = { editing = false },
             title = { Text("编辑动态") },
@@ -530,4 +531,5 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
             },
             dismissButton = { TextButton(onClick = { editing = false }) { Text("取消") } },
         )
+    }
 }

@@ -20,6 +20,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
     signingConfigs {
         create("production") {
+            storeType = "PKCS12"
             System.getenv("ANDROID_KEYSTORE_PATH")?.let { storeFile = file(it) }
             storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
             keyAlias = System.getenv("ANDROID_KEY_ALIAS")

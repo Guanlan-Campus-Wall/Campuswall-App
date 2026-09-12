@@ -240,7 +240,7 @@ fun PermissionsDialog(model: WallModel, id: String, close: () -> Unit) {
                 }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = e.displayError()
         }
     }
     Dialog(onDismissRequest = close) {

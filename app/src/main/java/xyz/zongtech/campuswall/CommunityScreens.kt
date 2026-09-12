@@ -32,7 +32,7 @@ fun TopicsScreen(model: WallModel, go: (String) -> Unit) {
             error = null
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = e.displayError()
         } finally {
             loading = false
         }
@@ -89,7 +89,7 @@ fun ProfileScreen(model: WallModel, id: String, go: (String) -> Unit, back: () -
             user = model.api.request("/api/user/$id/profile").optJSONObject("user") ?: JSONObject()
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            model.error = e.message
+            model.error = e.displayError()
         }
     }
     Column {
@@ -214,7 +214,7 @@ fun NotificationsScreen(model: WallModel, go: (String) -> Unit) {
                 total = r.optInt("total")
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                model.error = e.message
+                model.error = e.displayError()
             }
     }
     Column {
@@ -314,7 +314,7 @@ fun MyCommentsScreen(model: WallModel, go: (String) -> Unit, back: () -> Unit) {
             total = r.optInt("total")
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            model.error = e.message
+            model.error = e.displayError()
         }
     }
     Column {
@@ -359,7 +359,7 @@ fun HelpScreen(model: WallModel, back: () -> Unit) {
             notices = r.objects("notices").ifEmpty { r.objects("content") }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            model.error = e.message
+            model.error = e.displayError()
         }
     }
     Column {

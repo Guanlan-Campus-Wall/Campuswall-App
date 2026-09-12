@@ -1,5 +1,13 @@
 package xyz.zongtech.campuswall
 
+fun Throwable.displayError(): String =
+    when (this) {
+        is java.net.SocketTimeoutException -> "连接超时，请稍后重试。"
+        is java.net.UnknownHostException -> "无法连接服务器，请检查网络。"
+        is java.io.IOException -> "网络连接中断，请检查网络后重试。"
+        else -> message?.takeIf { it.any { char -> char in '\u4e00'..'\u9fff' } } ?: "操作未完成，请稍后重试。"
+    }
+
 fun displayState(value: String): String =
     when (value) {
         "pending" -> "待审核"

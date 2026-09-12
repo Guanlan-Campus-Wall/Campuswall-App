@@ -59,7 +59,7 @@ class WallModel(application: Application) : AndroidViewModel(application) {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                error = e.message ?: "网络连接失败"
+                error = e.displayError()
             } finally {
                 busy = false
             }

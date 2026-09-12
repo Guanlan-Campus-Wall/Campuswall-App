@@ -67,7 +67,7 @@ fun AdminScreen(model: WallModel, back: () -> Unit) {
                 error = null
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                error = e.message
+                error = e.displayError()
             } finally {
                 loading = false
             }
@@ -412,7 +412,7 @@ fun AdminScreen(model: WallModel, back: () -> Unit) {
                                 )
                             )
                             if (s.endpoint == "/api/messages") {
-                                Text(row.s("review_status"))
+                                Text(displayState(row.s("review_status")))
                                 Row(Modifier.horizontalScroll(rememberScrollState())) {
                                     listOf("approve" to "通过", "return" to "退回待审").forEach { (v, t)
                                         ->
@@ -825,7 +825,7 @@ private fun ReadableObject(value: JSONObject) {
                 Column(Modifier.padding(start = 12.dp)) { ReadableObject(v) }
             } else if (v !is org.json.JSONArray)
                 Text(
-                    "${labels[k]?:"信息"}：${if(v==JSONObject.NULL)"—" else displayState(v.toString())}",
+                    "${labels[k]?:"信息"}：${if(v==JSONObject.NULL)"—" else displayState(v?.toString().orEmpty())}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
         }

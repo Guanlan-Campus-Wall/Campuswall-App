@@ -34,7 +34,7 @@ fun LoginScreen(model: WallModel, back: () -> Unit) {
                     ?: JSONObject()
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            model.error = e.message
+            model.error = e.displayError()
         }
     }
     val action = if (register) "register" else if (admin) "admin_login" else "login"
@@ -83,14 +83,18 @@ fun LoginScreen(model: WallModel, back: () -> Unit) {
                 OutlinedButton(
                     onClick = {
                         model.captchaState = UUID.randomUUID().toString()
-                        CustomTabsIntent.Builder()
-                            .build()
-                            .launchUrl(
-                                context,
-                                Uri.parse(
-                                    "https://wall.zongtech.xyz/native-captcha.html?action=$action&state=${model.captchaState}"
-                                ),
-                            )
+                        try {
+                            CustomTabsIntent.Builder()
+                                .build()
+                                .launchUrl(
+                                    context,
+                                    Uri.parse(
+                                        "https://wall.zongtech.xyz/native-captcha.html?action=$action&state=${model.captchaState}"
+                                    ),
+                                )
+                        } catch (_: android.content.ActivityNotFoundException) {
+                            model.error = "请先安装浏览器，再完成人机验证。"
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

@@ -224,7 +224,7 @@ fun FeedScreen(
                 .forEach { if (it.s("id") !in model.ownedPosts) model.ownedPosts.add(it.s("id")) }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = e.displayError()
         } finally {
             loading = false
         }

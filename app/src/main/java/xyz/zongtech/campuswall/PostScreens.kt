@@ -103,7 +103,7 @@ fun Attachment(file: String, api: WallApi? = null) {
                             if (e is kotlinx.coroutines.CancellationException) throw e
                             error =
                                 if (e is android.content.ActivityNotFoundException) "手机上没有可打开此文件的应用"
-                                else e.message
+                                else e.displayError()
                         } finally {
                             downloading = false
                         }
@@ -324,6 +324,8 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
     var deleting by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf("") }
+    var editTags by remember { mutableStateOf("") }
+    var editAnonymous by remember { mutableStateOf(true) }
     LaunchedEffect(id, model.revision, refresh) {
         try {
             post =
@@ -333,7 +335,7 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
                 saved = model.api.request("/api/user/me/favorites/ids").strings("ids").contains(id)
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = e.displayError()
         }
     }
     Column {
@@ -367,6 +369,8 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
                         TextButton(
                             onClick = {
                                 editText = p.s("text")
+                                editTags = p.strings("tags").joinToString(",")
+                                editAnonymous = p.optBoolean("anonymous", true)
                                 editing = true
                             }
                         ) {
@@ -484,7 +488,25 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
         AlertDialog(
             onDismissRequest = { editing = false },
             title = { Text("编辑动态") },
-            text = { OutlinedTextField(editText, { editText = it }, minLines = 4) },
+            text = {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        editText,
+                        { editText = it },
+                        label = { Text("正文") },
+                        minLines = 4,
+                    )
+                    OutlinedTextField(editTags, { editTags = it }, label = { Text("话题，用逗号分隔") })
+                    if (post?.optJSONObject("lost_found") == null)
+                        Row {
+                            Checkbox(editAnonymous, { editAnonymous = it })
+                            Text("匿名发布", Modifier.padding(top = 12.dp))
+                        }
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -495,9 +517,8 @@ fun DetailScreen(model: WallModel, id: String, go: (String) -> Unit, back: () ->
                                 fields =
                                     mapOf(
                                         "text" to editText,
-                                        "tags" to post!!.strings("tags").joinToString(","),
-                                        "anonymous" to
-                                            post!!.optBoolean("anonymous", true).toString(),
+                                        "tags" to editTags.replace('，', ','),
+                                        "anonymous" to editAnonymous.toString(),
                                     ),
                             )
                             editing = false

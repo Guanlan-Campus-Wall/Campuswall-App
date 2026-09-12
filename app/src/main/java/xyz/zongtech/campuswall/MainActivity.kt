@@ -14,6 +14,12 @@ import androidx.compose.ui.graphics.Color
 class MainActivity : ComponentActivity() {
     private val model: WallModel by viewModels()
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val configuration = android.content.res.Configuration(newBase.resources.configuration)
+        configuration.setLocale(java.util.Locale.SIMPLIFIED_CHINESE)
+        super.attachBaseContext(newBase.createConfigurationContext(configuration))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

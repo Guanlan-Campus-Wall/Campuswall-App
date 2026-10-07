@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import android.view.LayoutInflater
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -359,12 +360,25 @@ fun PostCard(post: JSONObject, model: WallModel, go: (String) -> Unit, detail: B
                 onClick = if (anonymous) null else ({ go("profile/${post.s("user_id")}") }),
             )
             Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                Text(
-                    if (anonymous) "匿名同学" else post.s("display_name_snapshot", "一位同学"),
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (anonymous) "匿名同学" else post.s("display_name_snapshot", "一位同学"),
+                        Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (post.optBoolean("official"))
+                        Text(
+                            "官方",
+                            Modifier.padding(start = 6.dp)
+                                .clip(Capsule())
+                                .background(colors.accent)
+                                .padding(horizontal = 7.dp, vertical = 1.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colors.onAccent,
+                        )
+                }
                 Text(post.s("timestamp"), style = MaterialTheme.typography.labelSmall, color = colors.secondary)
             }
             if (post.optBoolean("featured"))

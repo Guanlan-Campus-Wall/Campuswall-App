@@ -5,11 +5,15 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.DisposableEffect
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
+import xyz.zongtech.campuswall.glass.GlassTheme
+import xyz.zongtech.campuswall.ui.CampusWallApp
 
 class MainActivity : ComponentActivity() {
     private val model: WallModel by viewModels()
@@ -41,14 +45,26 @@ class MainActivity : ComponentActivity() {
                 if (Build.VERSION.SDK_INT >= 31 && model.dynamicColor) {
                     if (dark) dynamicDarkColorScheme(this) else dynamicLightColorScheme(this)
                 } else if (dark)
-                    darkColorScheme(primary = Color(0xFF9DD4B5), secondary = Color(0xFFB8CCBD))
+                    darkColorScheme(
+                        primary = Color(0xFF9DD4B5),
+                        onPrimary = Color(0xFF003824),
+                        secondary = Color(0xFFB8CCBD),
+                        tertiary = Color(0xFFF0B6C8),
+                    )
                 else
                     lightColorScheme(
                         primary = Color(0xFF285C49),
+                        primaryContainer = Color(0xFFB7EFD3),
                         secondary = Color(0xFF516457),
                         tertiary = Color(0xFF8E4A60),
                     )
-            MaterialTheme(colorScheme = colors) { CampusWall(model, intent?.data) }
+            DisposableEffect(dark) {
+                // 系统栏保持透明，图标颜色跟随应用内的深浅色设置。
+                val style = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT) { dark }
+                enableEdgeToEdge(style, style)
+                onDispose {}
+            }
+            GlassTheme(colors, dark) { CampusWallApp(model) }
         }
     }
 

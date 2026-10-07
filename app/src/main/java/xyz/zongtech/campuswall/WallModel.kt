@@ -20,6 +20,7 @@ class WallModel(application: Application) : AndroidViewModel(application) {
     val ownedPosts = mutableStateListOf<String>()
     var pendingMessage by mutableStateOf<String?>(null)
     var openNotifications by mutableStateOf(false)
+    var unread by mutableIntStateOf(0)
     private val preferences = application.getSharedPreferences("preferences", 0)
     var themeMode by mutableStateOf(preferences.getString("theme", "system") ?: "system")
     var dynamicColor by mutableStateOf(preferences.getBoolean("dynamic_color", true))
@@ -63,6 +64,19 @@ class WallModel(application: Application) : AndroidViewModel(application) {
             } finally {
                 busy = false
             }
+        }
+    }
+
+    fun refreshUnread() {
+        if (user == null) {
+            unread = 0
+            return
+        }
+        viewModelScope.launch {
+            try {
+                unread =
+                    api.request("/api/user/me/notifications?page=1&page_size=1").optInt("unread")
+            } catch (_: Exception) {}
         }
     }
 

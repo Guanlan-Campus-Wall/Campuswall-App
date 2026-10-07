@@ -21,14 +21,31 @@ class WallModel(application: Application) : AndroidViewModel(application) {
     var pendingMessage by mutableStateOf<String?>(null)
     var openNotifications by mutableStateOf(false)
     var unread by mutableIntStateOf(0)
+    /** 底部输入条被点按的次数，表白墙与失物招领页据此打开发布抽屉。 */
+    var dockTick by mutableIntStateOf(0)
     private val preferences = application.getSharedPreferences("preferences", 0)
     var themeMode by mutableStateOf(preferences.getString("theme", "system") ?: "system")
-    var dynamicColor by mutableStateOf(preferences.getBoolean("dynamic_color", true))
+    var palette by mutableStateOf(preferences.getString("palette", "clay") ?: "clay")
+    val favoriteIds = mutableStateListOf<String>()
 
-    fun setAppearance(theme: String = themeMode, dynamic: Boolean = dynamicColor) {
+    fun setAppearance(theme: String = themeMode, palette: String = this.palette) {
         themeMode = theme
-        dynamicColor = dynamic
-        preferences.edit().putString("theme", theme).putBoolean("dynamic_color", dynamic).apply()
+        this.palette = palette
+        preferences.edit().putString("theme", theme).putString("palette", palette).apply()
+    }
+
+    fun refreshFavorites() {
+        if (user == null) {
+            favoriteIds.clear()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val ids = api.request("/api/user/me/favorites/ids").strings("ids")
+                favoriteIds.clear()
+                favoriteIds.addAll(ids)
+            } catch (_: Exception) {}
+        }
     }
 
     init {
@@ -42,6 +59,7 @@ class WallModel(application: Application) : AndroidViewModel(application) {
             } catch (_: Exception) {
                 user = null
             }
+            refreshFavorites()
             try {
                 community =
                     api.request("/api/community/config").optJSONObject("community") ?: JSONObject()
